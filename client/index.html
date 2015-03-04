@@ -47,8 +47,6 @@ KEY_DOWN  = 40,
  */
 canvas,   /* HTMLCanvas */
 ctx,      /* CanvasRenderingContext2d */
-keystate, /* Object, used for keyboard inputs */
-frames,   /* number, used for animation */
 score,    /* number, keep track of the player score */
 /**
  * Grid datastructor, usefull in games where the game world is
@@ -58,11 +56,6 @@ score,    /* number, keep track of the player score */
  */
 grid = [[]];
 
-function initializeGrid(){
-    for(var i=0; i<grid.length; ++i){
-        grid[i] = EMPTY;
-    }
-}
 /**
  * Starts the game
  */
@@ -76,18 +69,46 @@ function main() {
     document.body.appendChild(canvas);
     // sets an base font for bigger score display
     ctx.font = "12px Helvetica";
-    frames = 0;
-    keystate = {};
     // keeps track of the keybourd input
     document.addEventListener("keydown", function(evt) {
-        keystate[evt.keyCode] = true;
+        console.log("keydown: " + evt.keyCode);
+        switch(evt.keyCode){
+            case KEY_LEFT:
+                socket.emit('keydown', KEY_LEFT);
+                break;
+            case KEY_RIGHT:
+                socket.emit('keydown', KEY_RIGHT);
+                break;
+            case KEY_UP:
+                socket.emit('keydown', KEY_UP);
+                break;
+            case KEY_DOWN:
+                socket.emit('keydown', KEY_DOWN);
+                break;
+        }
+        
     });
     document.addEventListener("keyup", function(evt) {
-        delete keystate[evt.keyCode];
+        console.log("keyup: " + evt.keyCode);
+        switch(evt.keyCode){
+            case KEY_LEFT:
+                socket.emit('keyup', KEY_LEFT);
+                break;
+            case KEY_RIGHT:
+                socket.emit('keyup', KEY_RIGHT);
+                break;
+            case KEY_UP:
+                socket.emit('keyup', KEY_UP);
+                break;
+            case KEY_DOWN:
+                socket.emit('keyup', KEY_DOWN);
+                break;
+        }
+
     });
     // intatiate game objects and starts the game loop
     init();
-    loop();
+
 }
 
 
@@ -95,33 +116,6 @@ function init() {
     score = 0;
     //initializeGrid();
 }
-
-function loop() {
-    update();
-    draw();
-
-    window.requestAnimationFrame(loop, canvas);
-}
-
-function update() {
-    frames++;
-    // changing direction of the snake depending on which keys
-    // that are pressed
-    if (keystate[KEY_LEFT] && snake.direction !== RIGHT) {
-        socket.emit('key', KEY_LEFT);
-    }
-    if (keystate[KEY_UP] && snake.direction !== DOWN) {
-        socket.emit('key', KEY_UP);
-    }
-    if (keystate[KEY_RIGHT] && snake.direction !== LEFT) {
-        socket.emit('key', KEY_RIGHT);
-    }
-    if (keystate[KEY_DOWN] && snake.direction !== UP) {
-        socket.emit('key', KEY_DOWN);
-    }
-    
-}
-
 
 function draw() {
     var tw = canvas.width/grid.length;
@@ -156,6 +150,11 @@ function draw() {
         main();
         grid = data.grid;
         console.log('initialize client grid');
+    });
+
+    socket.on('update', function(data){
+        grid = data.grid;
+        draw();
     });
 </script>
 </body>
