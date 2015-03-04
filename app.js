@@ -215,11 +215,11 @@ io.on('connection', function(client) {
     setInterval(function(){
         update();
         client.emit('update', {grid: grid._grid}); 
-    }, 200);
+    }, 350);
 });
 
 
 
-server.listen(8080, function(){
+server.listen(8000, function(){
     console.log("server is running");
 });
