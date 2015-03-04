@@ -34,10 +34,6 @@ ROWS = 26,
 EMPTY = 0,
 SNAKE = 1,
 FRUIT = 2,
-LEFT  = 0,
-UP    = 1,
-RIGHT = 2,
-DOWN  = 3,
 KEY_LEFT  = 37,
 KEY_UP    = 38,
 KEY_RIGHT = 39,
@@ -54,7 +50,11 @@ score,    /* number, keep track of the player score */
  * 
  * @type {Object}
  */
-grid = [[]];
+grid = [[]],
+snakes = [];
+
+var userId = null;
+var keydownData = {};
 
 /**
  * Starts the game
@@ -71,68 +71,65 @@ function main() {
     ctx.font = "12px Helvetica";
     // keeps track of the keybourd input
     document.addEventListener("keydown", function(evt) {
-        console.log("keydown: " + evt.keyCode);
+
         switch(evt.keyCode){
             case KEY_LEFT:
-                socket.emit('keydown', KEY_LEFT);
+                keydownData['keyCode'] = KEY_LEFT;
+                socket.emit('keydown', keydownData);
                 break;
             case KEY_RIGHT:
-                socket.emit('keydown', KEY_RIGHT);
+                keydownData['keyCode'] = KEY_RIGHT;
+                socket.emit('keydown', keydownData);
                 break;
             case KEY_UP:
-                socket.emit('keydown', KEY_UP);
+                keydownData['keyCode'] = KEY_UP;
+                socket.emit('keydown', keydownData);
                 break;
             case KEY_DOWN:
-                socket.emit('keydown', KEY_DOWN);
+                keydownData['keyCode'] = KEY_DOWN;
+                socket.emit('keydown', keydownData);
                 break;
         }
         
     });
-    document.addEventListener("keyup", function(evt) {
-        console.log("keyup: " + evt.keyCode);
-        switch(evt.keyCode){
-            case KEY_LEFT:
-                socket.emit('keyup', KEY_LEFT);
-                break;
-            case KEY_RIGHT:
-                socket.emit('keyup', KEY_RIGHT);
-                break;
-            case KEY_UP:
-                socket.emit('keyup', KEY_UP);
-                break;
-            case KEY_DOWN:
-                socket.emit('keyup', KEY_DOWN);
-                break;
-        }
+    // document.addEventListener("keyup", function(evt) {
+    //     console.log("keyup: " + evt.keyCode);
+    //     switch(evt.keyCode){
+    //         case KEY_LEFT:
+    //             socket.emit('keyup', KEY_LEFT);
+    //             break;
+    //         case KEY_RIGHT:
+    //             socket.emit('keyup', KEY_RIGHT);
+    //             break;
+    //         case KEY_UP:
+    //             socket.emit('keyup', KEY_UP);
+    //             break;
+    //         case KEY_DOWN:
+    //             socket.emit('keyup', KEY_DOWN);
+    //             break;
+    //     }
 
-    });
-    // intatiate game objects and starts the game loop
-    init();
+    // });
 
-}
-
-
-function init() {
     score = 0;
-    //initializeGrid();
+
 }
+
 
 function draw() {
     var tw = canvas.width/grid.length;
     var th = canvas.height/grid[0].length;
     for (var x=0; x < grid.length; x++) {
         for (var y=0; y < grid[0].length; y++) {
-
-
             switch (grid[x][y]) {
                 case EMPTY:
                     ctx.fillStyle = "#fff";
                     break;
-                case SNAKE:
-                    ctx.fillStyle = "#0ff";
-                    break;
                 case FRUIT:
                     ctx.fillStyle = "#f00";
+                    break;
+                default:
+                    ctx.fillStyle = "#0ff";
                     break;
             }
             ctx.fillRect(x*tw, y*th, tw, th);
@@ -149,6 +146,8 @@ function draw() {
     socket.on('init', function(data){
         main();
         grid = data.grid;
+        userId = data.userId;
+        keydownData['userId'] = userId;
         console.log('initialize client grid');
     });
 

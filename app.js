@@ -20,7 +20,55 @@ KEY_UP    = 38,
 KEY_RIGHT = 39,
 KEY_DOWN  = 40;
 
-var keystate, frames = 0, score = 0;
+var frames = 0;
+
+snakeId = 0;
+userId = 0;
+/*  Snake model  */
+var snakes = {};
+var Snake = function(){
+    this.direction = null;
+    this.last = null;
+    this._queue = null; 
+    this.id = null;
+    this.userId = null;
+};
+Snake.prototype.init = function(d, x, y) {
+    this.direction = d;
+    this._queue = [];
+    this.insert(x, y);
+    this.id = ++snakeId;
+    snakes[this.id] = this;
+};
+
+Snake.prototype.insert = function(x, y) {
+    // unshift prepends an element to an array
+    this._queue.unshift({x:x, y:y});
+    this.last = this._queue[0];
+};
+
+Snake.prototype.remove = function() {
+    // pop returns the last element of an array
+    return this._queue.pop();
+};
+
+/* User Model */
+var users = {};
+var User = function(){
+    this.score = 0;
+    this.keystate = {};
+    this.id;
+}
+User.prototype.init = function(){
+    this.id = ++userId;
+    var newSnake = new Snake();
+    var sp = {x:Math.floor(COLS/2), y:ROWS-1};
+    newSnake.init(UP, sp.x, sp.y);
+    newSnake.userId = this.id;
+    users[this.id] = this;
+};
+
+
 
 var grid = {
     width: null,  /* number, the number of columns */
@@ -48,28 +96,7 @@ var grid = {
     }
 };
 
-var snakes = [];
-var Snake = function(){
-    this.direction = null;
-    this.last = null;
-    this._queue = null; 
-};
-Snake.prototype.start = function(d, x, y) {
-        this.direction = d;
-        this._queue = [];
-        this.insert(x, y);
-};
 
-Snake.prototype.insert = function(x, y) {
-    // unshift prepends an element to an array
-    this._queue.unshift({x:x, y:y});
-    this.last = this._queue[0];
-};
-
-Snake.prototype.remove = function() {
-    // pop returns the last element of an array
-    return this._queue.pop();
-};
 
 var setFood = function () {
     var empty = [];
@@ -87,62 +114,76 @@ var setFood = function () {
 }
 
 var update = function(){
-    if (keystate[KEY_LEFT] && snakes[0].direction !== RIGHT) {
-        snakes[0].direction = LEFT;
-    }
-    if (keystate[KEY_UP] && snakes[0].direction !== DOWN) {
-        snakes[0].direction = UP;
-    }
-    if (keystate[KEY_RIGHT] && snakes[0].direction !== LEFT) {
-        snakes[0].direction = RIGHT;
-    }
-    if (keystate[KEY_DOWN] && snakes[0].direction !== UP) {
-        snakes[0].direction = DOWN;
-    }
-
     
-    if(++frames % 5 === 0){
-        // pop the last element from the snake queue i.e. the
-        // head
-        var nx = snakes[0].last.x;
-        var ny = snakes[0].last.y;
-        // updates the position depending on the snake direction
-        switch (snakes[0].direction) {
-            case LEFT:
-                nx--;
-                break;
-            case UP:
-                ny--;
-                break;
-            case RIGHT:
-                nx++;
-                break;
-            case DOWN:
-                ny++;
-                break;
+
+    for (var snakeId in snakes) {
+
+        if (snakes.hasOwnProperty(snakeId)) {
+
+            var snake = snakes[snakeId];
+
+            var userId = snakes[snakeId].userId + '';
+            var user = users[userId];
+
+            // console.log(users);
+            // console.log(snake);
+            // console.log(user);
+
+            if (user.keystate[KEY_LEFT] && snake.direction !== RIGHT) {
+                snake.direction = LEFT;
+            }
+            if (user.keystate[KEY_UP] && snake.direction !== DOWN) {
+                snake.direction = UP;
+            }
+            if (user.keystate[KEY_RIGHT] && snake.direction !== LEFT) {
+                snake.direction = RIGHT;
+            }
+            if (user.keystate[KEY_DOWN] && snake.direction !== UP) {
+                snake.direction = DOWN;
+            }
+
+            // pop the last element from the snake queue i.e. the
+            // head
+            var nx = snake.last.x;
+            var ny = snake.last.y;
+            // updates the position depending on the snake direction
+            switch (snake.direction) {
+                case LEFT:
+                    nx--;
+                    break;
+                case UP:
+                    ny--;
+                    break;
+                case RIGHT:
+                    nx++;
+                    break;
+                case DOWN:
+                    ny++;
+                    break;
+            }
+            // checks all gameover conditions
+            if (0 > nx || nx > grid.width-1  ||
+                0 > ny || ny > grid.height-1 ||
+                grid.get(nx, ny) === SNAKE
+            ) {
+                continue;
+            }
+            // check wheter the new position are on the fruit item
+            if (grid.get(nx, ny) === FRUIT) {
+                // increment the score and sets a new fruit position
+                user.score++;
+                setFood();
+            } else {
+                // take out the first item from the snake queue i.e
+                // the tail and remove id from grid
+                var tail = snake.remove();
+                grid.set(EMPTY, tail.x, tail.y);
+            }
+            // add a snake id at the new position and append it to 
+            // the snake queue
+            grid.set(SNAKE, nx, ny);
+            snake.insert(nx, ny);
         }
-        // checks all gameover conditions
-        if (0 > nx || nx > grid.width-1  ||
-            0 > ny || ny > grid.height-1 ||
-            grid.get(nx, ny) === SNAKE
-        ) {
-            return;
-        }
-        // check wheter the new position are on the fruit item
-        if (grid.get(nx, ny) === FRUIT) {
-            // increment the score and sets a new fruit position
-            score++;
-            setFood();
-        } else {
-            // take out the first item from the snake queue i.e
-            // the tail and remove id from grid
-            var tail = snakes[0].remove();
-            grid.set(EMPTY, tail.x, tail.y);
-        }
-        // add a snake id at the new position and append it to 
-        // the snake queue
-        grid.set(SNAKE, nx, ny);
-        snakes[0].insert(nx, ny);
     }
 
 };
@@ -156,19 +197,15 @@ app.use(express.static(path.resolve(__dirname, 'client')));
 io.on('connection', function(client) {
     console.log('Client connected...');
 
-    var newSnake = new Snake();
-    var sp = {x:Math.floor(COLS/2), y:ROWS-1};
-    newSnake.start(UP, sp.x, sp.y);
+    var user = new User(); 
+    user.init();   
 
-    console.log(snakes);
-    snakes.push(newSnake);
-    keystate = {};
+    client.emit('init', {grid: grid._grid, userId: user.id});
 
-    client.emit('init', {grid: grid._grid});
-
-    client.on('keydown', function(keyCode){
-        keystate = {};
-        keystate[keyCode] = true;
+    client.on('keydown', function(data){
+        var user = users[data.userId];
+        user.keystate = {};
+        user.keystate[data.keyCode] = true;
     });
 
     // client.on('keyup', function(data){
@@ -178,7 +215,7 @@ io.on('connection', function(client) {
     setInterval(function(){
         update();
         client.emit('update', {grid: grid._grid}); 
-    }, 33.3);
+    }, 200);
 });
 
 
