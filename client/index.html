@@ -158,6 +158,10 @@ function draw() {
         grid = data.grid;
         draw();
     });
+
+    socket.on('updateScore', function(newScore){
+        score = newScore;
+    });
 </script>
 </body>
 </html>

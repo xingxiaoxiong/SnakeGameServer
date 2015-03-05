@@ -24,6 +24,9 @@ var frames = 0;
 
 snakeId = 0;
 userId = 3;
+
+var emitter = null;
+
 /*  Snake model  */
 var snakes = {};
 var Snake = function(){
@@ -58,14 +61,16 @@ var User = function(){
     this.score = 0;
     this.keystate = {};
     this.id;
+    this.client = null;
 }
-User.prototype.init = function(){
+User.prototype.init = function(client){
     this.id = ++userId;
     var newSnake = new Snake();
     var sp = {x:Math.floor(COLS/2), y:ROWS-1};
     newSnake.init(UP, sp.x, sp.y);
     newSnake.userId = this.id;
     users[this.id] = this;
+    this.client = client;
 };
 
 
@@ -172,6 +177,10 @@ var update = function(){
             if (grid.get(nx, ny) === FRUIT) {
                 // increment the score and sets a new fruit position
                 user.score++;
+
+                console.log(user.score);
+                user.client.emit('updateScore', user.score);
+
                 setFood();
             } else {
                 // take out the first item from the snake queue i.e
@@ -198,7 +207,7 @@ io.on('connection', function(client) {
     console.log('Client connected...');
 
     var user = new User(); 
-    user.init();   
+    user.init(client);   
 
     client.emit('init', {grid: grid._grid, userId: user.id});
 
