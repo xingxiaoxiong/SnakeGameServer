@@ -25,8 +25,6 @@ var frames = 0;
 snakeId = 0;
 userId = 3;
 
-var emitter = null;
-
 /*  Snake model  */
 var snakes = {};
 var Snake = function(){
@@ -49,6 +47,9 @@ Snake.prototype.die = function(){
     for(var i=0; i<this._queue.length; ++i){
         grid.set(EMPTY, this._queue[i].x, this._queue[i].y);
     }
+
+    users[this.userId].score--;
+    users[this.userId].client.emit('updateScore', users[this.userId].score);
     delete this;
 
 };
@@ -129,10 +130,8 @@ var setFood = function () {
 
 var update = function(){
     
-    //var diedSnakeIds = [];
     for (var snakeId in snakes) {
 
-        //console.log(snakeId);
         
         if (snakes.hasOwnProperty(snakeId)) {
 
@@ -141,9 +140,6 @@ var update = function(){
             var userId = snakes[snakeId].userId + '';
             var user = users[userId];
 
-            // console.log(users);
-            // console.log(snake);
-            // console.log(user);
 
             if (user.keystate[KEY_LEFT] && snake.direction !== RIGHT) {
                 snake.direction = LEFT;
@@ -184,7 +180,10 @@ var update = function(){
             ) {
 
                 snake.die();
-                //diedSnakeIds.push(snakeId);
+                var newSnake = new Snake();
+                var sp = {x:Math.floor(COLS/2), y:ROWS-1};
+                newSnake.init(UP, sp.x, sp.y);
+                newSnake.userId = user.id;
                 continue;
             }
             // check wheter the new position are on the fruit item
@@ -209,10 +208,6 @@ var update = function(){
 
 
     }
-
-    // for(var i=0; i<diedSnakeIds.length; ++i){
-    //     snakes[snakeId].die();
-    // }
 
 };
 
@@ -243,7 +238,7 @@ io.on('connection', function(client) {
     setInterval(function(){
         update();
         client.emit('update', {grid: grid._grid}); 
-    }, 400);
+    }, 100);
 });
 
 
