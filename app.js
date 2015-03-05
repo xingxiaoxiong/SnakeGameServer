@@ -42,6 +42,7 @@ Snake.prototype.init = function(d, userId) {
     this.id = ++snakeId;
     snakes[this.id] = this;
     this.userId = userId;
+    users[userId].snakeId = this.id;
 };
 
 Snake.prototype.die = function(){
@@ -74,13 +75,19 @@ var User = function(){
     this.keystate = {};
     this.id;
     this.client = null;
+    this.snakeId;
 }
 User.prototype.init = function(client){
     this.id = ++userId;
+    users[this.id] = this;
     var newSnake = new Snake();
     newSnake.init(UP, this.id);
-    users[this.id] = this;
     this.client = client;
+};
+User.prototype.remove = function(){
+    snakes[this.snakeId].die();
+    delete users[this.id];
+    delete this;
 };
 
 
@@ -227,6 +234,19 @@ io.on('connection', function(client) {
         var user = users[data.userId];
         user.keystate = {};
         user.keystate[data.keyCode] = true;
+    });
+
+    client.on('disconnect', function() {
+        console.log(client.id + " disconnected");
+
+        for(var userId in users){
+            if(users[userId].client == client){
+                users[userId].remove();
+                break;
+            }
+        }
+
+
     });
 
     // client.on('keyup', function(data){
