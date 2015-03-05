@@ -25,6 +25,8 @@ var frames = 0;
 snakeId = 0;
 userId = 3;
 
+var frames = 0;
+
 /*  Snake model  */
 var snakes = {};
 var Snake = function(){
@@ -34,15 +36,15 @@ var Snake = function(){
     this.id = null;
     this.userId = null;
 };
-Snake.prototype.init = function(d, userId) {
+Snake.prototype.init = function(d, user) {
     var sp = {x:Math.floor(COLS/2), y:ROWS-1};
     this.direction = d;
     this._queue = [];
     this.insert(sp.x, sp.y);
     this.id = ++snakeId;
     snakes[this.id] = this;
-    this.userId = userId;
-    users[userId].snakeId = this.id;
+    this.userId = user.id;
+    user.snakeId = this.id;
 };
 
 Snake.prototype.die = function(){
@@ -81,7 +83,7 @@ User.prototype.init = function(client){
     this.id = ++userId;
     users[this.id] = this;
     var newSnake = new Snake();
-    newSnake.init(UP, this.id);
+    newSnake.init(UP, this);
     this.client = client;
 };
 User.prototype.remove = function(){
@@ -136,6 +138,8 @@ var setFood = function () {
 }
 
 var update = function(){
+
+    frames++;
     
     for (var snakeId in snakes) {
 
@@ -161,54 +165,58 @@ var update = function(){
                 snake.direction = DOWN;
             }
 
-            // pop the last element from the snake queue i.e. the
-            // head
-            var nx = snake.last.x;
-            var ny = snake.last.y;
-            // updates the position depending on the snake direction
-            switch (snake.direction) {
-                case LEFT:
-                    nx--;
-                    break;
-                case UP:
-                    ny--;
-                    break;
-                case RIGHT:
-                    nx++;
-                    break;
-                case DOWN:
-                    ny++;
-                    break;
-            }
-            // checks all gameover conditions
-            if (0 > nx || nx > grid.width-1  ||
-                0 > ny || ny > grid.height-1 ||
-                (grid.get(nx, ny) != 0) && (grid.get(nx, ny) != 2)
-            ) {
 
-                snake.die();
-                var newSnake = new Snake();
-                newSnake.init(UP, user.id);
-                continue;
-            }
-            // check wheter the new position are on the fruit item
-            if (grid.get(nx, ny) === FRUIT) {
-                // increment the score and sets a new fruit position
-                user.score++;
+            if(frames % 5 == 0){
+                frames = 0;
+                // pop the last element from the snake queue i.e. the
+                // head
+                var nx = snake.last.x;
+                var ny = snake.last.y;
+                // updates the position depending on the snake direction
+                switch (snake.direction) {
+                    case LEFT:
+                        nx--;
+                        break;
+                    case UP:
+                        ny--;
+                        break;
+                    case RIGHT:
+                        nx++;
+                        break;
+                    case DOWN:
+                        ny++;
+                        break;
+                }
+                // checks all gameover conditions
+                if (0 > nx || nx > grid.width-1  ||
+                    0 > ny || ny > grid.height-1 ||
+                    (grid.get(nx, ny) != 0) && (grid.get(nx, ny) != 2)
+                ) {
 
-                user.client.emit('updateScore', user.score);
+                    snake.die();
+                    var newSnake = new Snake();
+                    newSnake.init(UP, user);
+                    continue;
+                }
+                // check wheter the new position are on the fruit item
+                if (grid.get(nx, ny) === FRUIT) {
+                    // increment the score and sets a new fruit position
+                    user.score++;
 
-                setFood();
-            } else {
-                // take out the first item from the snake queue i.e
-                // the tail and remove id from grid
-                var tail = snake.remove();
-                grid.set(EMPTY, tail.x, tail.y);
+                    user.client.emit('updateScore', user.score);
+
+                    setFood();
+                } else {
+                    // take out the first item from the snake queue i.e
+                    // the tail and remove id from grid
+                    var tail = snake.remove();
+                    grid.set(EMPTY, tail.x, tail.y);
+                }
+                // add a snake id at the new position and append it to 
+                // the snake queue
+                grid.set(user.id, nx, ny);
+                snake.insert(nx, ny);
             }
-            // add a snake id at the new position and append it to 
-            // the snake queue
-            grid.set(user.id, nx, ny);
-            snake.insert(nx, ny);
         }
 
 
@@ -256,7 +264,7 @@ io.on('connection', function(client) {
     setInterval(function(){
         update();
         client.emit('update', {grid: grid._grid}); 
-    }, 100);
+    }, 60);
 });
 
 
