@@ -23,7 +23,7 @@ KEY_DOWN  = 40;
 var frames = 0;
 
 snakeId = 0;
-userId = 0;
+userId = 3;
 /*  Snake model  */
 var snakes = {};
 var Snake = function(){
@@ -164,7 +164,7 @@ var update = function(){
             // checks all gameover conditions
             if (0 > nx || nx > grid.width-1  ||
                 0 > ny || ny > grid.height-1 ||
-                grid.get(nx, ny) === SNAKE
+                (grid.get(nx, ny) != 0) && (grid.get(nx, ny) != 2)
             ) {
                 continue;
             }
@@ -181,7 +181,7 @@ var update = function(){
             }
             // add a snake id at the new position and append it to 
             // the snake queue
-            grid.set(SNAKE, nx, ny);
+            grid.set(user.id, nx, ny);
             snake.insert(nx, ny);
         }
     }
@@ -215,7 +215,7 @@ io.on('connection', function(client) {
     setInterval(function(){
         update();
         client.emit('update', {grid: grid._grid}); 
-    }, 350);
+    }, 200);
 });
 
 
