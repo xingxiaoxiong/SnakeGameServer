@@ -44,6 +44,15 @@ Snake.prototype.init = function(d, x, y) {
     snakes[this.id] = this;
 };
 
+Snake.prototype.die = function(){
+    delete snakes[this.id];
+    for(var i=0; i<this._queue.length; ++i){
+        grid.set(EMPTY, this._queue[i].x, this._queue[i].y);
+    }
+    delete this;
+
+};
+
 Snake.prototype.insert = function(x, y) {
     // unshift prepends an element to an array
     this._queue.unshift({x:x, y:y});
@@ -120,9 +129,11 @@ var setFood = function () {
 
 var update = function(){
     
-
+    var diedSnakeIds = [];
     for (var snakeId in snakes) {
 
+        //console.log(snakeId);
+        
         if (snakes.hasOwnProperty(snakeId)) {
 
             var snake = snakes[snakeId];
@@ -171,6 +182,9 @@ var update = function(){
                 0 > ny || ny > grid.height-1 ||
                 (grid.get(nx, ny) != 0) && (grid.get(nx, ny) != 2)
             ) {
+
+                //snake.die();
+                diedSnakeIds.push(snakeId);
                 continue;
             }
             // check wheter the new position are on the fruit item
@@ -178,7 +192,6 @@ var update = function(){
                 // increment the score and sets a new fruit position
                 user.score++;
 
-                console.log(user.score);
                 user.client.emit('updateScore', user.score);
 
                 setFood();
@@ -193,6 +206,12 @@ var update = function(){
             grid.set(user.id, nx, ny);
             snake.insert(nx, ny);
         }
+
+
+    }
+
+    for(var i=0; i<diedSnakeIds.length; ++i){
+        snakes[snakeId].die();
     }
 
 };
@@ -224,7 +243,7 @@ io.on('connection', function(client) {
     setInterval(function(){
         update();
         client.emit('update', {grid: grid._grid}); 
-    }, 200);
+    }, 400);
 });
 
 
