@@ -34,12 +34,14 @@ var Snake = function(){
     this.id = null;
     this.userId = null;
 };
-Snake.prototype.init = function(d, x, y) {
+Snake.prototype.init = function(d, userId) {
+    var sp = {x:Math.floor(COLS/2), y:ROWS-1};
     this.direction = d;
     this._queue = [];
-    this.insert(x, y);
+    this.insert(sp.x, sp.y);
     this.id = ++snakeId;
     snakes[this.id] = this;
+    this.userId = userId;
 };
 
 Snake.prototype.die = function(){
@@ -76,9 +78,7 @@ var User = function(){
 User.prototype.init = function(client){
     this.id = ++userId;
     var newSnake = new Snake();
-    var sp = {x:Math.floor(COLS/2), y:ROWS-1};
-    newSnake.init(UP, sp.x, sp.y);
-    newSnake.userId = this.id;
+    newSnake.init(UP, this.id);
     users[this.id] = this;
     this.client = client;
 };
@@ -181,9 +181,7 @@ var update = function(){
 
                 snake.die();
                 var newSnake = new Snake();
-                var sp = {x:Math.floor(COLS/2), y:ROWS-1};
-                newSnake.init(UP, sp.x, sp.y);
-                newSnake.userId = user.id;
+                newSnake.init(UP, user.id);
                 continue;
             }
             // check wheter the new position are on the fruit item
