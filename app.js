@@ -129,7 +129,7 @@ var setFood = function () {
 
 var update = function(){
     
-    var diedSnakeIds = [];
+    //var diedSnakeIds = [];
     for (var snakeId in snakes) {
 
         //console.log(snakeId);
@@ -183,8 +183,8 @@ var update = function(){
                 (grid.get(nx, ny) != 0) && (grid.get(nx, ny) != 2)
             ) {
 
-                //snake.die();
-                diedSnakeIds.push(snakeId);
+                snake.die();
+                //diedSnakeIds.push(snakeId);
                 continue;
             }
             // check wheter the new position are on the fruit item
@@ -210,9 +210,9 @@ var update = function(){
 
     }
 
-    for(var i=0; i<diedSnakeIds.length; ++i){
-        snakes[snakeId].die();
-    }
+    // for(var i=0; i<diedSnakeIds.length; ++i){
+    //     snakes[snakeId].die();
+    // }
 
 };
 
