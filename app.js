@@ -4,6 +4,8 @@ var app = express();
 var server = require('http').createServer(app);
 var io = require('socket.io')(server);
 
+var config = require('./client/config');
+
 
 var
 COLS = 26,
