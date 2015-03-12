@@ -27,12 +27,9 @@
         this.inputs.push(input);
     };
 
-    Game.prototype.remove = function(userId){
+    Game.prototype.removeUser = function(userId){
         var user = this.users[userId];
-        var snake = user.snake;
-        for(var i=0; i<snake._queue.length; ++i){
-            this.grid.set(CONFIG.EMPTY, snake._queue[i].x, snake._queue[i].y);
-        }
+        this.clearSnake(user.snake);
         user.del();
         delete this.users[userId];
     };
@@ -61,13 +58,15 @@
         return userId;        
     };
 
-    Game.prototype.removeUser = function(id){
-        delete this.users[id];
-    };
-
     Game.prototype.getWorldState = function(){
         return this.grid._grid;
     }
+
+    Game.prototype.clearSnake = function(snake){
+        for(var i=0; i<snake._queue.length; ++i){
+            this.grid.set(CONFIG.EMPTY, snake._queue[i].x, snake._queue[i].y);
+        }
+    };
 
     Game.prototype.update = function(){
         this.frames++;
@@ -124,9 +123,7 @@
                     0 > ny || ny > this.grid.height-1 ||
                     (this.grid.get(nx, ny) != 0) && (this.grid.get(nx, ny) != 2)
                 ) {
-                    for(var i=0; i<snake._queue.length; ++i){
-                        this.grid.set(CONFIG.EMPTY, snake._queue[i].x, snake._queue[i].y);
-                    }
+                    this.clearSnake(snake);
                     var sp = {x:Math.floor(CONFIG.COLS/2), y:CONFIG.ROWS-1};
                     var newSnake = new Snake(CONFIG.UP, sp.x, sp.y);
                     user.assignSnake(newSnake);

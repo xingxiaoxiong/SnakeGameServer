@@ -25,7 +25,7 @@ io.on('connection', function(client) {
     client.on('disconnect', function() {
         console.log(client.userId + " disconnected");
 
-        game.remove(client.userId);
+        game.removeUser(client.userId);
     });
 
     setInterval(function(){
