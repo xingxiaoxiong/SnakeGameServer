@@ -2,8 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Simple Snake Game</title>
-    
+    <title>Multip-player Snake Game</title>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
     <!-- Basic styling, centering of the canvas. -->
     <style>
     canvas {
@@ -13,10 +14,13 @@
         margin: auto;
         top: 0;
         bottom: 0;
-        right: 0;
         left: 0;
+        right: 0;
     }
     </style>
+
+    <script type="text/javascript" src="https://code.jquery.com/jquery-1.11.2.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
 
     <!-- HTML5 shiv and Respond.js IE8 support of HTML5 elements and media queries -->
     <!--[if lt IE 9]>
@@ -26,6 +30,31 @@
     
 </head>
 <body>
+
+<h3 class="text-center">多人贪食蛇</h3>
+
+<div class="container">
+    <div class="row">
+
+        <div class="col-sm-3">
+            <div class="panel panel-default">
+                <div class="panel-heading">用户列表</div>
+
+                <!-- Table -->
+                <table class="table">
+                </table>
+            </div>
+        </div>
+
+        <div class="col-sm-7">
+            <canvas id="canvas"></canvas>
+        </div>
+
+        
+
+    </div>
+</div>
+
 
 <script src="/socket.io/socket.io.js"></script>
 <script src="/js/models/Grid.js"></script>
@@ -69,7 +98,7 @@ var keydownData = {};
  */
 function main() {
     // create and initiate the canvas element
-    canvas = document.createElement("canvas");
+    canvas = document.getElementById("canvas");
     canvas.width = COLS*20;
     canvas.height = ROWS*20;
     ctx = canvas.getContext("2d");
