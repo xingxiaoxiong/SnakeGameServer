@@ -7,6 +7,8 @@ var io = require('socket.io')(server);
 var gameModule = require('./server.game.js');
 var Game = gameModule.Game;
 
+var CONFIG = require('./client/js/CONFIG.js').CONFIG;
+
 var game = new Game();
 
 app.use(express.static(path.resolve(__dirname, 'client')));
@@ -31,7 +33,7 @@ io.on('connection', function(client) {
     setInterval(function(){
         game.update();
         client.emit('update', {grid: game.grid._grid}); 
-    }, 60);
+    }, 15);
 });
 
 

@@ -15,7 +15,7 @@
         KEY_UP: 38,
         KEY_RIGHT: 39,
         KEY_DOWN: 40,
-        SPEED: 2
+        TIME_INTERVAL: 100
     };
 
     exports.CONFIG = CONFIG;

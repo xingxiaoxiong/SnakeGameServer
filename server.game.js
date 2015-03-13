@@ -20,6 +20,8 @@
         this.inputs = []; // {userId: , keyCode: }
         this.frames = 0;
         this.setFood();
+        this.deltaTime = 0;
+        this.now = 0;
         //this.lastProcessedInputs = {}; // userId: inputId
     };
 
@@ -69,37 +71,44 @@
     };
 
     Game.prototype.update = function(){
-        this.frames++;
 
-        for(var i=0; i<this.inputs.length; ++i){
-            var input = this.inputs[i];
-            var user = this.users[input.userId];
-            user.keystate = {};
-            user.keystate[input.keyCode] = true;
+        if( this.now == 0){
+            this.now = new Date().getTime();
+        }else{
+            var now = new Date().getTime();
+            this.deltaTime += (now - this.now);
+            this.now = now;
         }
-        this.inputs = [];
 
-        for(var userId in this.users){
-            var user = this.users[userId];
-            var snake = user.snake;
+        if( this.deltaTime > CONFIG.TIME_INTERVAL){
+            this.deltaTime -= CONFIG.TIME_INTERVAL;
 
-            if (user.keystate[CONFIG.KEY_LEFT] && snake.direction !== CONFIG.RIGHT) {
-                snake.direction = CONFIG.LEFT;
+            for(var i=0; i<this.inputs.length; ++i){
+                var input = this.inputs[i];
+                var user = this.users[input.userId];
+                user.keystate = {};
+                user.keystate[input.keyCode] = true;
             }
-            if (user.keystate[CONFIG.KEY_UP] && snake.direction !== CONFIG.DOWN) {
-                snake.direction = CONFIG.UP;
-            }
-            if (user.keystate[CONFIG.KEY_RIGHT] && snake.direction !== CONFIG.LEFT) {
-                snake.direction = CONFIG.RIGHT;
-            }
-            if (user.keystate[CONFIG.KEY_DOWN] && snake.direction !== CONFIG.UP) {
-                snake.direction = CONFIG.DOWN;
-            }
+            this.inputs = [];
 
-            //console.log(snake._queue);
+            for(var userId in this.users){
+                var user = this.users[userId];
+                var snake = user.snake;
 
-            if(this.frames % 5 == 0){
-                this.frames = 0;
+                if (user.keystate[CONFIG.KEY_LEFT] && snake.direction !== CONFIG.RIGHT) {
+                    snake.direction = CONFIG.LEFT;
+                }
+                if (user.keystate[CONFIG.KEY_UP] && snake.direction !== CONFIG.DOWN) {
+                    snake.direction = CONFIG.UP;
+                }
+                if (user.keystate[CONFIG.KEY_RIGHT] && snake.direction !== CONFIG.LEFT) {
+                    snake.direction = CONFIG.RIGHT;
+                }
+                if (user.keystate[CONFIG.KEY_DOWN] && snake.direction !== CONFIG.UP) {
+                    snake.direction = CONFIG.DOWN;
+                }
+
+                //console.log(snake._queue);
 
                 var nx = snake.last.x;
                 var ny = snake.last.y;
@@ -145,7 +154,10 @@
                 // the snake queue
                 this.grid.set(user.id, nx, ny);
                 snake.insert(nx, ny);
+                
+
             }
+
         }
     };
 
