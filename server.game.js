@@ -14,7 +14,7 @@
     var Snake = snakeModule.Snake;
     var User = userModule.User;
 
-    var Game = function(){
+    var Game = function(io){
         this.grid = new Grid(CONFIG.EMPTY, CONFIG.COLS, CONFIG.ROWS);
         this.users = {};
         this.inputs = []; // {userId: , keyCode: }
@@ -22,6 +22,8 @@
         this.setFood();
         this.deltaTime = 0;
         this.now = 0;
+        this.scores = {};
+        this.io = io;
         //this.lastProcessedInputs = {}; // userId: inputId
     };
 
@@ -30,6 +32,7 @@
     };
 
     Game.prototype.removeUser = function(userId){
+        delete this.scores[userId];
         var user = this.users[userId];
         this.clearSnake(user.snake);
         user.del();
@@ -62,7 +65,7 @@
 
     Game.prototype.getWorldState = function(){
         return this.grid._grid;
-    }
+    };
 
     Game.prototype.clearSnake = function(snake){
         for(var i=0; i<snake._queue.length; ++i){
@@ -142,6 +145,9 @@
                 if (this.grid.get(nx, ny) === CONFIG.FRUIT) {
                     // increment the score and sets a new fruit position
                     user.score++;
+                    var userId = user.id;
+                    this.scores[userId] = this.scores[userId] + 1;
+                    this.io.sockets.emit('updateScore', {userId: userId, score: this.scores[userId]});
                     this.setFood();
 
                 } else {
@@ -152,6 +158,8 @@
                 }
                 // add a snake id at the new position and append it to 
                 // the snake queue
+
+                //console.log(user.id);
                 this.grid.set(user.id, nx, ny);
                 snake.insert(nx, ny);
                 

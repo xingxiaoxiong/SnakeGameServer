@@ -9,7 +9,7 @@ var Game = gameModule.Game;
 
 var CONFIG = require('./client/js/CONFIG.js').CONFIG;
 
-var game = new Game();
+var game = new Game(io);
 
 app.use(express.static(path.resolve(__dirname, 'client')));
 
@@ -18,7 +18,11 @@ io.on('connection', function(client) {
 
     client.userId = game.addNewUser();
 
-    client.emit('init', {grid: game.grid._grid, userId: client.userId});
+    game.scores[client.userId] = 0;
+
+    client.emit('init', {grid: game.grid._grid, userId: client.userId, scores: game.scores});
+
+    client.broadcast.emit('addMe', client.userId);
 
     client.on('keydown', function(data){
         game.addInput({userId: client.userId, keyCode: data.keyCode});
@@ -26,6 +30,8 @@ io.on('connection', function(client) {
 
     client.on('disconnect', function() {
         console.log(client.userId + " disconnected");
+
+        client.broadcast.emit('removeMe', client.userId);
 
         game.removeUser(client.userId);
     });

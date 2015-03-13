@@ -38,10 +38,11 @@
 
         <div class="col-sm-3">
             <div class="panel panel-default">
-                <div class="panel-heading">用户列表</div>
+                <div class="panel-heading">玩家列表</div>
 
                 <!-- Table -->
-                <table class="table">
+                <table class="table scores-list">
+                    
                 </table>
             </div>
         </div>
@@ -88,7 +89,7 @@ score,    /* number, keep track of the player score */
 grid = [[]],
 snakes = [];
 
-var userId = null;
+var myId = null;
 var keydownData = {};
 
 /**
@@ -152,6 +153,7 @@ function main() {
 
 
 function draw() {
+console.log(myId);
     var tw = canvas.width/grid.length;
     var th = canvas.height/grid[0].length;
     for (var x=0; x < grid.length; x++) {
@@ -163,7 +165,7 @@ function draw() {
                 case FRUIT:
                     ctx.fillStyle = "#f00";
                     break;
-                case userId:
+                case myId:
                     ctx.fillStyle = "#00f";
                     break;
                 default:
@@ -173,8 +175,8 @@ function draw() {
             ctx.fillRect(x*tw, y*th, tw, th);
         }
     }
-    ctx.fillStyle = "#000";
-    ctx.fillText("SCORE: " + score, 10, canvas.height-10);
+    //ctx.fillStyle = "#000";
+    //ctx.fillText("SCORE: " + score, 10, canvas.height-10);
 }
 // start and run the game
 
@@ -184,9 +186,19 @@ function draw() {
     socket.on('init', function(data){
         main();
         grid = data.grid;
-        userId = data.userId;
-        keydownData['userId'] = userId;
+        myId = data.userId;
+
+        console.log("hello");
+        console.log(myId);
+
+        keydownData['userId'] = myId;
         console.log('initialize client grid');
+
+        var scores = data.scores;
+        for(var userId in scores){
+            $('.scores-list').append("<tr id='" + userId + "' >" + "<td id='" + userId + "-name'>" + userId + "</td>"
+                + "<td id='" + userId + "-score'>" + scores[userId] + "</td></tr>");
+        }
     });
 
     socket.on('update', function(data){
@@ -194,8 +206,18 @@ function draw() {
         draw();
     });
 
-    socket.on('updateScore', function(newScore){
-        score = newScore;
+    socket.on('addMe', function(userId){
+        $('.scores-list').append("<tr id='" + userId + "' >" + "<td id='" + userId + "-name'>" + userId + "</td>"
+                + "<td id='" + userId + "-score'>" + 0 + "</td>");
+    });
+
+    socket.on('removeMe', function(userId){
+        $('#' + userId).remove();
+    });
+
+    socket.on('updateScore', function(data){
+        console.log(data);
+        $('#' + data.userId + '-score').html(data.score);
     });
 </script>
 </body>
