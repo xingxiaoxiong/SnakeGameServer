@@ -2,8 +2,8 @@
 (function(exports){
 
     var CONFIG = {
-        COLS: 26,
-        ROWS: 26,
+        COLS: 36,
+        ROWS: 36,
         EMPTY: 0,
         SNAKE: 1,
         FRUIT: 2,

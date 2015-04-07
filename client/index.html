@@ -88,6 +88,8 @@ score,    /* number, keep track of the player score */
  */
 grid = [[]],
 snakes = [];
+gameState = {};
+fruit = null;
 
 var myId = null;
 var keydownData = {};
@@ -153,7 +155,22 @@ function main() {
 
 
 function draw() {
-console.log(myId);
+    
+    for (var x=0; x < grid.length; x++) {
+        for (var y=0; y < grid[0].length; y++) {
+            grid[x][y] = EMPTY;
+        }
+    }
+    
+    for(var userId in gameState){
+        var snakePos = gameState[userId];
+        for(var i=0; i<snakePos.length; ++i){
+            grid[snakePos[i].x][snakePos[i].y] = userId;
+        }
+    }
+
+    grid[fruit.x][fruit.y] = FRUIT;    
+    
     var tw = canvas.width/grid.length;
     var th = canvas.height/grid[0].length;
     for (var x=0; x < grid.length; x++) {
@@ -186,9 +203,9 @@ console.log(myId);
     socket.on('init', function(data){
         main();
         grid = data.grid;
+        fruit = data.fruit;
         myId = data.userId;
 
-        console.log("hello");
         console.log(myId);
 
         keydownData['userId'] = myId;
@@ -202,7 +219,9 @@ console.log(myId);
     });
 
     socket.on('update', function(data){
-        grid = data.grid;
+        //grid = data.grid;
+        fruit = data.fruit;
+        gameState = data.gameState;
         draw();
     });
 

@@ -19,11 +19,14 @@
         this.users = {};
         this.inputs = []; // {userId: , keyCode: }
         this.frames = 0;
-        this.setFood();
+        this.currentFruit = null;
         this.deltaTime = 0;
         this.now = 0;
         this.scores = {};
         this.io = io;
+        this.gameState = {};
+        
+        this.setFood();
         //this.lastProcessedInputs = {}; // userId: inputId
     };
 
@@ -52,6 +55,7 @@
         // chooses a random cell
         var randpos = empty[Math.round(Math.random()*(empty.length - 1))];
         this.grid.set(CONFIG.FRUIT, randpos.x, randpos.y);
+        this.currentFruit = randpos;
     };
 
     Game.prototype.addNewUser = function(){
@@ -94,7 +98,9 @@
             }
             this.inputs = [];
 
+            this.gameState = {};
             for(var userId in this.users){
+                
                 var user = this.users[userId];
                 var snake = user.snake;
 
@@ -163,7 +169,7 @@
                 this.grid.set(user.id, nx, ny);
                 snake.insert(nx, ny);
                 
-
+                this.gameState[userId] = snake._queue;
             }
 
         }

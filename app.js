@@ -20,7 +20,7 @@ io.on('connection', function(client) {
 
     game.scores[client.userId] = 0;
 
-    client.emit('init', {grid: game.grid._grid, userId: client.userId, scores: game.scores});
+    client.emit('init', {grid: game.grid._grid, userId: client.userId, scores: game.scores, fruit: game.currentFruit});
 
     client.broadcast.emit('addMe', client.userId);
 
@@ -38,7 +38,7 @@ io.on('connection', function(client) {
 
     setInterval(function(){
         game.update();
-        client.emit('update', {grid: game.grid._grid}); 
+        client.emit('update', {gameState: game.gameState, fruit: game.currentFruit}); 
     }, 15);
 });
 
